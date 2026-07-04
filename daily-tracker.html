@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Show Up. Stay Steady.</title>
+<style>
+  :root{
+    --cream:#F6F1E4;
+    --paper:#FFFCF5;
+    --ink:#2B2620;
+    --ink-soft:#6B6255;
+    --amber:#C17817;
+    --amber-dark:#9A5E10;
+    --verdigris:#4A8C82;
+    --verdigris-dark:#376B63;
+    --green:#6B8F5A;
+    --green-bg:#E7EEE2;
+    --yellow:#D4A017;
+    --yellow-bg:#F7EEDA;
+    --red:#B85C4A;
+    --red-bg:#F3E2DD;
+    --line:#DED4BE;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Georgia','Iowan Old Style',serif;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:60px;
+  }
+  .sans{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  header{
+    padding:28px 20px 20px;
+    text-align:center;
+    border-bottom:1px solid var(--line);
+    background:var(--paper);
+  }
+  header h1{font-size:1.5rem;letter-spacing:0.02em;margin:0 0 4px;color:var(--amber-dark);}
+  header p{margin:0;font-size:0.85rem;color:var(--ink-soft);font-style:italic;}
+  .date-nav{
+    display:flex;align-items:center;justify-content:center;gap:14px;
+    padding:14px 20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  .date-nav button{background:none;border:none;font-size:1.2rem;color:var(--amber);cursor:pointer;padding:4px 10px;}
+  .date-nav .today-label{font-weight:600;font-size:0.95rem;min-width:180px;text-align:center;}
+  .container{max-width:640px;margin:0 auto;padding:0 18px;}
+  section{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px;margin:16px 0;}
+  section h2{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:0.72rem;text-transform:uppercase;letter-spacing:0.14em;
+    color:var(--verdigris-dark);margin:0 0 12px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  section h2 .sub{font-size:0.68rem;color:var(--ink-soft);text-transform:none;letter-spacing:0;font-weight:400;}
+  .day-type-row{display:flex;gap:10px;}
+  .day-btn{
+    flex:1;padding:14px 6px;border-radius:10px;border:2px solid var(--line);background:var(--paper);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-weight:600;font-size:0.9rem;
+    cursor:pointer;color:var(--ink-soft);transition:all 0.15s ease;
+  }
+  .day-btn.green.active{background:var(--green-bg);border-color:var(--green);color:var(--green);}
+  .day-btn.yellow.active{background:var(--yellow-bg);border-color:var(--yellow);color:#8a6a10;}
+  .day-btn.red.active{background:var(--red-bg);border-color:var(--red);color:var(--red);}
+
+  .schedule-toggle{display:flex;gap:8px;margin-top:12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .schedule-toggle button{
+    flex:1;padding:9px 6px;border-radius:8px;border:1.5px solid var(--line);background:var(--cream);
+    font-size:0.82rem;font-weight:600;color:var(--ink-soft);cursor:pointer;
+  }
+  .schedule-toggle button.active{background:var(--amber);border-color:var(--amber);color:white;}
+  .link-btn{background:none;border:none;color:var(--verdigris-dark);font-size:0.72rem;cursor:pointer;font-weight:600;}
+
+  .time-field-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .time-field-row label{font-size:0.82rem;color:var(--ink-soft);flex:1;}
+  .time-field-row input[type=time]{
+    border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:0.95rem;background:var(--cream);
+  }
+
+  .timeline-item{
+    display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  .timeline-item:last-child{border-bottom:none;}
+  .timeline-item input[type=checkbox]{width:23px;height:23px;accent-color:var(--verdigris);flex-shrink:0;}
+  .timeline-time{font-variant-numeric:tabular-nums;font-size:0.78rem;color:var(--ink-soft);min-width:56px;font-weight:600;}
+  .timeline-label{flex:1;font-size:0.95rem;cursor:pointer;}
+  .timeline-item.checked .timeline-label{color:var(--verdigris-dark);text-decoration:line-through;text-decoration-color:var(--verdigris);opacity:0.7;}
+  .timeline-item.current{background:var(--yellow-bg);border-radius:8px;margin:0 -4px;padding:12px 8px;}
+  .timeline-item.current .timeline-time{color:var(--amber-dark);}
+  .now-badge{
+    font-size:0.62rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--amber-dark);font-weight:700;
+    background:var(--yellow-bg);border:1px solid var(--yellow);border-radius:5px;padding:1px 6px;
+  }
+
+  .editor-panel{background:var(--cream);border-radius:10px;padding:12px;margin-top:12px;}
+  .edit-row{display:flex;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px solid var(--line);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .edit-row:last-child{border-bottom:none;}
+  .edit-row input[type=time]{border:1px solid var(--line);border-radius:6px;padding:6px 4px;font-size:0.8rem;width:100px;background:var(--paper);}
+  .edit-row input[type=text]{flex:1;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:0.85rem;background:var(--paper);}
+  .edit-row button{background:none;border:none;color:var(--ink-soft);font-size:1.1rem;cursor:pointer;padding:2px 6px;}
+  .add-item-row{display:flex;gap:8px;margin-top:10px;}
+  .add-item-row input[type=time]{border:1px solid var(--line);border-radius:8px;padding:8px 6px;font-size:0.85rem;background:var(--paper);width:110px;}
+  .add-item-row input[type=text]{flex:1;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:0.85rem;background:var(--paper);}
+  .add-item-row button{background:var(--verdigris);color:white;border:none;border-radius:8px;padding:8px 14px;font-size:0.85rem;cursor:pointer;}
+
+  textarea{
+    width:100%;min-height:80px;border:1px solid var(--line);border-radius:10px;padding:12px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:0.9rem;background:var(--cream);resize:vertical;
+  }
+
+  .macro-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .macro-field{background:var(--cream);border-radius:10px;padding:10px 12px;}
+  .macro-field label{display:block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-soft);margin-bottom:4px;}
+  .macro-field input{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:1rem;background:var(--paper);}
+  .macro-target{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:0.72rem;color:var(--ink-soft);margin-top:5px;}
+  .macro-target.over{color:var(--red);font-weight:600;}
+  .macro-target.under{color:var(--verdigris-dark);}
+  .macro-bar-wrap{margin-top:14px;}
+  .macro-bar{width:100%;height:10px;background:var(--line);border-radius:6px;overflow:hidden;}
+  .macro-bar-fill{height:100%;background:var(--amber);border-radius:6px;transition:width 0.2s ease;}
+  .macro-bar-fill.over{background:var(--red);}
+  .macro-bar-label{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:0.72rem;color:var(--ink-soft);margin-top:6px;text-align:center;}
+
+  .section-save-btn{
+    background:var(--verdigris);color:white;border:none;border-radius:20px;padding:10px 22px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-weight:600;font-size:0.85rem;
+    cursor:pointer;margin-top:14px;display:block;width:100%;
+  }
+  .section-save-btn.saved{background:var(--amber);}
+
+  .stats-row{display:flex;gap:10px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .stat{flex:1;text-align:center;background:var(--cream);border-radius:10px;padding:12px 6px;}
+  .stat .num{font-size:1.4rem;font-weight:700;color:var(--amber-dark);}
+  .stat .label{font-size:0.64rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--ink-soft);}
+
+  .week-strip{display:flex;gap:6px;margin-top:14px;justify-content:center;}
+  .week-strip .dot{
+    width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:0.65rem;color:white;font-weight:600;
+  }
+  .dot.green{background:var(--green);}
+  .dot.yellow{background:var(--yellow);}
+  .dot.red{background:var(--red);}
+  .dot.none{background:var(--line);color:var(--ink-soft);}
+
+  .reflection-counts{display:flex;gap:8px;margin-bottom:14px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .reflection-counts .rc{flex:1;text-align:center;border-radius:8px;padding:8px 4px;font-size:0.78rem;font-weight:600;}
+  .rc.green{background:var(--green-bg);color:var(--green);}
+  .rc.yellow{background:var(--yellow-bg);color:#8a6a10;}
+  .rc.red{background:var(--red-bg);color:var(--red);}
+  .rc.none{background:var(--cream);color:var(--ink-soft);}
+
+  .history-item{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .history-item:last-child{border-bottom:none;}
+  .history-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;}
+  .history-date{font-weight:600;font-size:0.85rem;min-width:78px;}
+  .history-meta{flex:1;font-size:0.76rem;color:var(--ink-soft);}
+  .empty-note{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--ink-soft);font-size:0.85rem;text-align:center;padding:10px 0;}
+
+  .backup-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .backup-btn{
+    flex:1;min-width:120px;background:var(--cream);border:1px solid var(--line);border-radius:10px;padding:12px 8px;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:0.82rem;font-weight:600;
+    color:var(--verdigris-dark);cursor:pointer;text-align:center;
+  }
+  .backup-note{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:0.72rem;color:var(--ink-soft);margin-top:10px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Show Up. Stay Steady.</h1>
+  <p>No shame.</p>
+</header>
+
+<div class="date-nav">
+  <button onclick="shiftDay(-1)">‹</button>
+  <div class="today-label" id="dateLabel"></div>
+  <button onclick="shiftDay(1)">›</button>
+</div>
+
+<div class="container">
+
+  <section>
+    <h2><span>Today</span> <button class="link-btn" onclick="toggleEditPanel()">Edit Schedule</button></h2>
+    <div class="day-type-row">
+      <button class="day-btn green" data-type="green" onclick="setDayType('green')">Green</button>
+      <button class="day-btn yellow" data-type="yellow" onclick="setDayType('yellow')">Yellow</button>
+      <button class="day-btn red" data-type="red" onclick="setDayType('red')">Red</button>
+    </div>
+    <div class="schedule-toggle">
+      <button data-sched="workday" onclick="setScheduleType('workday')">Workday</button>
+      <button data-sched="offday" onclick="setScheduleType('offday')">Off Day</button>
+    </div>
+    <div class="editor-panel" id="editorPanel" style="display:none;">
+      <div id="editorList"></div>
+      <div class="add-item-row">
+        <input type="time" id="newItemTime" value="09:00">
+        <input type="text" id="newItemLabel" placeholder="Add item...">
+        <button onclick="addScheduleItem()">Add</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span>Morning Check-in</span></h2>
+    <div class="time-field-row">
+      <label>Actual wake time</label>
+      <input type="time" id="wakeInput">
+    </div>
+    <div id="morningList"></div>
+    <button class="section-save-btn" id="morningSaveBtn" onclick="saveMorning()">Save Morning</button>
+  </section>
+
+  <section>
+    <h2><span>Evening Check-in</span></h2>
+    <div id="eveningList"></div>
+    <div class="time-field-row" style="margin-top:14px;">
+      <label>Actual bedtime</label>
+      <input type="time" id="bedInput">
+    </div>
+    <h2 style="margin-top:18px;"><span>Nutrition</span></h2>
+    <div class="macro-grid">
+      <div class="macro-field">
+        <label>Calories</label>
+        <input type="number" inputmode="numeric" id="calInput" placeholder="0">
+        <div class="macro-target" id="calTarget"></div>
+      </div>
+      <div class="macro-field">
+        <label>Protein (g)</label>
+        <input type="number" inputmode="numeric" id="proteinInput" placeholder="0">
+        <div class="macro-target" id="proteinTarget"></div>
+      </div>
+      <div class="macro-field">
+        <label>Fat (g)</label>
+        <input type="number" inputmode="numeric" id="fatInput" placeholder="0">
+        <div class="macro-target" id="fatTarget"></div>
+      </div>
+      <div class="macro-field">
+        <label>Carbs (g)</label>
+        <input type="number" inputmode="numeric" id="carbsInput" placeholder="0">
+        <div class="macro-target" id="carbsTarget"></div>
+      </div>
+    </div>
+    <div class="macro-bar-wrap">
+      <div class="macro-bar"><div class="macro-bar-fill" id="calBarFill"></div></div>
+      <div class="macro-bar-label" id="calBarLabel"></div>
+    </div>
+    <h2 style="margin-top:18px;"><span>Notes</span></h2>
+    <textarea id="notesBox" placeholder="How did today go? Anything worth remembering..."></textarea>
+    <button class="section-save-btn" id="eveningSaveBtn" onclick="saveEvening()">Save Evening</button>
+  </section>
+
+  <section>
+    <h2><span>Sleep Consistency</span> <span class="sub">last 7 days</span></h2>
+    <div class="stats-row">
+      <div class="stat"><div class="num" id="wakeStreakNum">0</div><div class="label">Wake Streak</div></div>
+      <div class="stat"><div class="num" id="wakeVarNum">–</div><div class="label">Avg Wake Var</div></div>
+      <div class="stat"><div class="num" id="bedVarNum">–</div><div class="label">Avg Bed Var</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>This Week</h2>
+    <div class="week-strip" id="weekStrip"></div>
+    <div class="stats-row" style="margin-top:14px;">
+      <div class="stat"><div class="num" id="streakNum">0</div><div class="label">Day Streak</div></div>
+      <div class="stat"><div class="num" id="greenNum">0</div><div class="label">Green (7d)</div></div>
+      <div class="stat"><div class="num" id="loggedNum">0</div><div class="label">Days Logged</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span>Weekly Reflection</span> <span class="sub" id="weekRangeLabel"></span></h2>
+    <div class="reflection-counts" id="reflectionCounts"></div>
+    <textarea id="reflectionBox" placeholder="Where did you show up this week? Where do you want more grace next week?"></textarea>
+    <button class="section-save-btn" id="reflectionSaveBtn" onclick="saveReflection()">Save Reflection</button>
+  </section>
+
+  <section>
+    <h2>History</h2>
+    <div id="historyList"></div>
+  </section>
+
+  <section>
+    <h2>Backup & Restore</h2>
+    <div class="backup-row">
+      <button class="backup-btn" onclick="exportBackup()">Export Backup (JSON)</button>
+      <button class="backup-btn" onclick="document.getElementById('importFile').click()">Import Backup</button>
+      <button class="backup-btn" onclick="exportCSV()">Export Summary (CSV)</button>
+    </div>
+    <input type="file" id="importFile" accept="application/json" style="display:none;" onchange="importBackup(event)">
+    <div class="backup-note">Everything lives in this browser only — export a backup now and then so you don't lose your history if you clear browser data or switch devices.</div>
+  </section>
+
+</div>
+
+<script>
+const STORAGE_KEY = 'showup_tracker_v3';
+
+const DEFAULT_SCHEDULES = {
+  workday: [
+    { id: 'w1', time: '07:00', label: 'Wake up' },
+    { id: 'w2', time: '07:15', label: 'Morning walk with Hank' },
+    { id: 'w3', time: '20:00', label: 'Bible verse w/ friends' },
+    { id: 'w4', time: '22:00', label: 'Read before bed' },
+    { id: 'w5', time: '22:30', label: 'Sleep' }
+  ],
+  offday: [
+    { id: 'o1', time: '08:30', label: 'Wake up' },
+    { id: 'o2', time: '09:00', label: 'Morning walk with Hank' },
+    { id: 'o3', time: '20:00', label: 'Bible verse w/ friends' },
+    { id: 'o4', time: '22:30', label: 'Read before bed' },
+    { id: 'o5', time: '23:00', label: 'Sleep' }
+  ]
+};
+
+const NUTRITION_TARGETS = { calories: 2950, protein: 200, fat: 97, carbs: 315 };
+
+let state = loadState();
+let currentDate = todayStr();
+let editPanelOpen = false;
+
+function todayStr(offsetDays = 0){
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return d.toISOString().slice(0,10);
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return {
+    schedules: JSON.parse(JSON.stringify(DEFAULT_SCHEDULES)),
+    days: {},
+    weeklyReflections: {}
+  };
+}
+
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }catch(e){
+    console.error('Storage error', e);
+  }
+}
+
+function getDayRecord(dateStr){
+  if(!state.days[dateStr]){
+    state.days[dateStr] = {
+      dayType: null,
+      scheduleType: 'workday',
+      completed: {},
+      notes: '',
+      nutrition: { calories:'', protein:'', fat:'', carbs:'' },
+      sleep: { actualWake:'', actualBed:'' }
+    };
+  }
+  const rec = state.days[dateStr];
+  if(!rec.nutrition) rec.nutrition = { calories:'', protein:'', fat:'', carbs:'' };
+  if(!rec.completed) rec.completed = {};
+  if(!rec.scheduleType) rec.scheduleType = 'workday';
+  if(!rec.sleep) rec.sleep = { actualWake:'', actualBed:'' };
+  return rec;
+}
+
+function formatDateLabel(dateStr){
+  const d = new Date(dateStr + 'T00:00:00');
+  const isToday = dateStr === todayStr();
+  const opts = { weekday:'short', month:'short', day:'numeric' };
+  return (isToday ? 'Today · ' : '') + d.toLocaleDateString('en-US', opts);
+}
+
+function formatTime12(time24){
+  if(!time24) return '';
+  const [h, m] = time24.split(':').map(Number);
+  const period = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12}:${String(m).padStart(2,'0')} ${period}`;
+}
+
+function timeToMinutes(time24){
+  const [h, m] = time24.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function shiftDay(delta){
+  const d = new Date(currentDate + 'T00:00:00');
+  d.setDate(d.getDate() + delta);
+  currentDate = d.toISOString().slice(0,10);
+  editPanelOpen = false;
+  render();
+}
+
+function setDayType(type){
+  const rec = getDayRecord(currentDate);
+  rec.dayType = (rec.dayType === type) ? null : type;
+  saveState();
+  render();
+}
+
+function setScheduleType(type){
+  const rec = getDayRecord(currentDate);
+  rec.scheduleType = type;
+  saveState();
+  render();
+}
+
+function toggleEditPanel(){
+  editPanelOpen = !editPanelOpen;
+  render();
+}
+
+function toggleItem(itemId){
+  const rec = getDayRecord(currentDate);
+  rec.completed[itemId] = !rec.completed[itemId];
+  saveState();
+  render();
+}
+
+function addScheduleItem(){
+  const rec = getDayRecord(currentDate);
+  const timeVal = document.getElementById('newItemTime').value;
+  const labelVal = document.getElementById('newItemLabel').value.trim();
+  if(!labelVal || !timeVal) return;
+  const list = state.schedules[rec.scheduleType];
+  const newId = rec.scheduleType[0] + Date.now();
+  list.push({ id: newId, time: timeVal, label: labelVal });
+  document.getElementById('newItemLabel').value = '';
+  saveState();
+  render();
+}
+
+function removeScheduleItem(scheduleType, itemId){
+  state.schedules[scheduleType] = state.schedules[scheduleType].filter(i => i.id !== itemId);
+  saveState();
+  render();
+}
+
+function updateScheduleItemTime(scheduleType, itemId, newTime){
+  const item = state.schedules[scheduleType].find(i => i.id === itemId);
+  if(item) item.time = newTime;
+  saveState();
+  render();
+}
+
+function updateScheduleItemLabel(scheduleType, itemId, newLabel){
+  const item = state.schedules[scheduleType].find(i => i.id === itemId);
+  if(item) item.label = newLabel;
+  saveState();
+}
+
+function flashSaved(btnId, label){
+  const btn = document.getElementById(btnId);
+  const original = btn.textContent;
+  btn.textContent = 'Saved ✓';
+  btn.classList.add('saved');
+  setTimeout(() => { btn.textContent = label; btn.classList.remove('saved'); }, 1300);
+}
+
+function saveMorning(){
+  const rec = getDayRecord(currentDate);
+  rec.sleep.actualWake = document.getElementById('wakeInput').value;
+  saveState();
+  flashSaved('morningSaveBtn', 'Save Morning');
+  render();
+}
+
+function saveEvening(){
+  const rec = getDayRecord(currentDate);
+  rec.sleep.actualBed = document.getElementById('bedInput').value;
+  rec.notes = document.getElementById('notesBox').value;
+  rec.nutrition.calories = document.getElementById('calInput').value;
+  rec.nutrition.protein = document.getElementById('proteinInput').value;
+  rec.nutrition.fat = document.getElementById('fatInput').value;
+  rec.nutrition.carbs = document.getElementById('carbsInput').value;
+  saveState();
+  flashSaved('eveningSaveBtn', 'Save Evening');
+  render();
+}
+
+function getWeekMonday(dateStr){
+  const d = new Date(dateStr + 'T00:00:00');
+  const day = d.getDay();
+  const diff = (day === 0 ? -6 : 1) - day;
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().slice(0,10);
+}
+
+function weekKeyFor(dateStr){
+  return getWeekMonday(dateStr);
+}
+
+function saveReflection(){
+  const key = weekKeyFor(currentDate);
+  state.weeklyReflections[key] = document.getElementById('reflectionBox').value;
+  saveState();
+  flashSaved('reflectionSaveBtn', 'Save Reflection');
+}
+
+function computeStats(){
+  const dates = Object.keys(state.days).sort();
+  let streak = 0;
+  for(let i=0; i<30; i++){
+    const d = todayStr(-i);
+    const rec = state.days[d];
+    if(rec && rec.dayType) streak++;
+    else break;
+  }
+  let greenCount = 0;
+  for(let i=0; i<7; i++){
+    const d = todayStr(-i);
+    const rec = state.days[d];
+    if(rec && rec.dayType === 'green') greenCount++;
+  }
+  const loggedCount = dates.filter(d => state.days[d].dayType || state.days[d].notes).length;
+  return { streak, greenCount, loggedCount };
+}
+
+function getTargetTime(scheduleType, kind){
+  const items = state.schedules[scheduleType] || [];
+  if(items.length === 0) return null;
+  const sorted = items.slice().sort((a,b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+  if(kind === 'wake'){
+    const found = sorted.find(i => i.label.toLowerCase().includes('wake'));
+    return found ? found.time : sorted[0].time;
+  } else {
+    const found = sorted.slice().reverse().find(i => i.label.toLowerCase().includes('sleep'));
+    return found ? found.time : sorted[sorted.length-1].time;
+  }
+}
+
+function computeSleepStats(){
+  let wakeStreak = 0;
+  let wakeVars = [];
+  let bedVars = [];
+
+  for(let i=0; i<30; i++){
+    const d = todayStr(-i);
+    const rec = state.days[d];
+    if(!rec || !rec.sleep || !rec.sleep.actualWake){
+      if(i < 30) { if(i===0 && !rec) continue; }
+      break;
+    }
+    const target = getTargetTime(rec.scheduleType, 'wake');
+    if(!target) break;
+    const diff = Math.abs(timeToMinutes(rec.sleep.actualWake) - timeToMinutes(target));
+    if(diff <= 30) wakeStreak++;
+    else break;
+  }
+
+  for(let i=0; i<7; i++){
+    const d = todayStr(-i);
+    const rec = state.days[d];
+    if(rec && rec.sleep && rec.sleep.actualWake){
+      const target = getTargetTime(rec.scheduleType, 'wake');
+      if(target) wakeVars.push(timeToMinutes(rec.sleep.actualWake) - timeToMinutes(target));
+    }
+    if(rec && rec.sleep && rec.sleep.actualBed){
+      const target = getTargetTime(rec.scheduleType, 'sleep');
+      if(target){
+        let actualMin = timeToMinutes(rec.sleep.actualBed);
+        let targetMin = timeToMinutes(target);
+        if(actualMin < 6*60) actualMin += 1440;
+        if(targetMin < 6*60) targetMin += 1440;
+        bedVars.push(actualMin - targetMin);
+      }
+    }
+  }
+
+  const avgWakeVar = wakeVars.length ? Math.round(wakeVars.reduce((a,b)=>a+b,0)/wakeVars.length) : null;
+  const avgBedVar = bedVars.length ? Math.round(bedVars.reduce((a,b)=>a+b,0)/bedVars.length) : null;
+
+  return { wakeStreak, avgWakeVar, avgBedVar };
+}
+
+function formatVar(mins){
+  if(mins === null) return '–';
+  if(mins === 0) return 'On time';
+  const abs = Math.abs(mins);
+  return (mins > 0 ? '+' : '-') + abs + 'm';
+}
+
+function renderMacroTarget(elId, value, target, unit){
+  const el = document.getElementById(elId);
+  const num = parseFloat(value);
+  if(!value || isNaN(num)){
+    el.textContent = `Target: ${target}${unit}`;
+    el.className = 'macro-target';
+    return;
+  }
+  const diff = target - num;
+  if(diff >= 0){ el.textContent = `${diff}${unit} to go`; el.className = 'macro-target under'; }
+  else { el.textContent = `${Math.abs(diff)}${unit} over`; el.className = 'macro-target over'; }
+}
+
+function getCurrentTimeMinutes(){
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes();
+}
+
+function renderEditor(){
+  const rec = getDayRecord(currentDate);
+  document.getElementById('editorPanel').style.display = editPanelOpen ? 'block' : 'none';
+  if(!editPanelOpen) return;
+  const schedType = rec.scheduleType;
+  const items = state.schedules[schedType].slice().sort((a,b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+  const list = document.getElementById('editorList');
+  list.innerHTML = '';
+  items.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'edit-row';
+    row.innerHTML = `
+      <input type="time" value="${item.time}">
+      <input type="text" value="${item.label}">
+      <button title="remove">×</button>
+    `;
+    row.querySelector('input[type=time]').addEventListener('change', (e) => updateScheduleItemTime(schedType, item.id, e.target.value));
+    row.querySelector('input[type=text]').addEventListener('change', (e) => updateScheduleItemLabel(schedType, item.id, e.target.value));
+    row.querySelector('button').addEventListener('click', () => removeScheduleItem(schedType, item.id));
+    list.appendChild(row);
+  });
+}
+
+function renderChecklist(containerId, filterFn){
+  const rec = getDayRecord(currentDate);
+  const isToday = currentDate === todayStr();
+  const schedType = rec.scheduleType;
+  const allItems = state.schedules[schedType].slice().sort((a,b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+  const items = allItems.filter(filterFn);
+  const nowMin = getCurrentTimeMinutes();
+
+  let currentItemId = null;
+  if(isToday){
+    for(let i=0; i<allItems.length; i++){
+      const itemMin = timeToMinutes(allItems[i].time);
+      const nextMin = i < allItems.length-1 ? timeToMinutes(allItems[i+1].time) : 24*60;
+      if(nowMin >= itemMin && nowMin < nextMin && !rec.completed[allItems[i].id]){
+        currentItemId = allItems[i].id;
+        break;
+      }
+    }
+  }
+
+  const list = document.getElementById(containerId);
+  list.innerHTML = '';
+  if(items.length === 0){
+    list.innerHTML = '<div class="empty-note">Nothing scheduled here yet.</div>';
+    return;
+  }
+  items.forEach(item => {
+    const checked = !!rec.completed[item.id];
+    const row = document.createElement('div');
+    row.className = 'timeline-item' + (checked ? ' checked' : '') + (item.id === currentItemId ? ' current' : '');
+    const cbId = 'chk_' + item.id;
+    row.innerHTML = `
+      <input type="checkbox" id="${cbId}" ${checked ? 'checked' : ''}>
+      <div class="timeline-time">${formatTime12(item.time)}</div>
+      <label class="timeline-label" for="${cbId}">${item.label}</label>
+      ${item.id === currentItemId ? '<span class="now-badge">Now</span>' : ''}
+    `;
+    row.querySelector('input').addEventListener('change', () => toggleItem(item.id));
+    list.appendChild(row);
+  });
+}
+
+function render(){
+  document.getElementById('dateLabel').textContent = formatDateLabel(currentDate);
+  const rec = getDayRecord(currentDate);
+
+  document.querySelectorAll('.day-btn').forEach(btn => {
+    btn.classList.toggle('active', rec.dayType === btn.dataset.type);
+  });
+  document.querySelectorAll('.schedule-toggle button').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.sched === rec.scheduleType);
+  });
+
+  renderEditor();
+  renderChecklist('morningList', item => timeToMinutes(item.time) < 12*60);
+  renderChecklist('eveningList', item => timeToMinutes(item.time) >= 12*60);
+
+  document.getElementById('wakeInput').value = rec.sleep.actualWake || '';
+  document.getElementById('bedInput').value = rec.sleep.actualBed || '';
+  document.getElementById('notesBox').value = rec.notes || '';
+
+  document.getElementById('calInput').value = rec.nutrition.calories || '';
+  document.getElementById('proteinInput').value = rec.nutrition.protein || '';
+  document.getElementById('fatInput').value = rec.nutrition.fat || '';
+  document.getElementById('carbsInput').value = rec.nutrition.carbs || '';
+
+  renderMacroTarget('calTarget', rec.nutrition.calories, NUTRITION_TARGETS.calories, '');
+  renderMacroTarget('proteinTarget', rec.nutrition.protein, NUTRITION_TARGETS.protein, 'g');
+  renderMacroTarget('fatTarget', rec.nutrition.fat, NUTRITION_TARGETS.fat, 'g');
+  renderMacroTarget('carbsTarget', rec.nutrition.carbs, NUTRITION_TARGETS.carbs, 'g');
+
+  const cal = parseFloat(rec.nutrition.calories) || 0;
+  const pct = Math.min((cal / NUTRITION_TARGETS.calories) * 100, 100);
+  const calBarFill = document.getElementById('calBarFill');
+  calBarFill.style.width = pct + '%';
+  calBarFill.classList.toggle('over', cal > NUTRITION_TARGETS.calories);
+  const remaining = NUTRITION_TARGETS.calories - cal;
+  document.getElementById('calBarLabel').textContent = cal === 0
+    ? `Target: ${NUTRITION_TARGETS.calories} cal`
+    : (remaining >= 0 ? `${remaining} cal remaining` : `${Math.abs(remaining)} cal over target`);
+
+  const sleepStats = computeSleepStats();
+  document.getElementById('wakeStreakNum').textContent = sleepStats.wakeStreak;
+  document.getElementById('wakeVarNum').textContent = formatVar(sleepStats.avgWakeVar);
+  document.getElementById('bedVarNum').textContent = formatVar(sleepStats.avgBedVar);
+
+  const strip = document.getElementById('weekStrip');
+  strip.innerHTML = '';
+  for(let i=6; i>=0; i--){
+    const d = todayStr(-i);
+    const r = state.days[d];
+    const dot = document.createElement('div');
+    dot.className = 'dot ' + (r && r.dayType ? r.dayType : 'none');
+    const day = new Date(d + 'T00:00:00');
+    dot.textContent = day.toLocaleDateString('en-US', { weekday:'narrow' });
+    strip.appendChild(dot);
+  }
+
+  const stats = computeStats();
+  document.getElementById('streakNum').textContent = stats.streak;
+  document.getElementById('greenNum').textContent = stats.greenCount;
+  document.getElementById('loggedNum').textContent = stats.loggedCount;
+
+  const weekKey = weekKeyFor(currentDate);
+  const monday = new Date(weekKey + 'T00:00:00');
+  const sunday = new Date(monday); sunday.setDate(sunday.getDate() + 6);
+  document.getElementById('weekRangeLabel').textContent =
+    monday.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' – ' + sunday.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+
+  const counts = { green:0, yellow:0, red:0, none:0 };
+  for(let i=0; i<7; i++){
+    const d = new Date(monday); d.setDate(d.getDate() + i);
+    const dStr = d.toISOString().slice(0,10);
+    const r = state.days[dStr];
+    if(r && r.dayType) counts[r.dayType]++;
+    else counts.none++;
+  }
+  const rcEl = document.getElementById('reflectionCounts');
+  rcEl.innerHTML = `
+    <div class="rc green">${counts.green} Green</div>
+    <div class="rc yellow">${counts.yellow} Yellow</div>
+    <div class="rc red">${counts.red} Red</div>
+    <div class="rc none">${counts.none} Blank</div>
+  `;
+  document.getElementById('reflectionBox').value = state.weeklyReflections[weekKey] || '';
+
+  const historyList = document.getElementById('historyList');
+  const allDates = Object.keys(state.days)
+    .filter(d => state.days[d].dayType || state.days[d].notes)
+    .sort()
+    .reverse()
+    .slice(0, 14);
+  historyList.innerHTML = '';
+  if(allDates.length === 0){
+    historyList.innerHTML = '<div class="empty-note">No entries yet — save today to start your history.</div>';
+  } else {
+    allDates.forEach(d => {
+      const r = state.days[d];
+      const schedItems = state.schedules[r.scheduleType] || [];
+      const doneCount = schedItems.filter(i => r.completed[i.id]).length;
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      const day = new Date(d + 'T00:00:00');
+      const wakeStr = r.sleep && r.sleep.actualWake ? ` · woke ${formatTime12(r.sleep.actualWake)}` : '';
+      item.innerHTML = `
+        <div class="history-dot"></div>
+        <div class="history-date">${day.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+        <div class="history-meta">${doneCount}/${schedItems.length} done${wakeStr}${r.notes ? ' · "' + r.notes.slice(0,30) + (r.notes.length>30?'…':'') + '"' : ''}</div>
+      `;
+      const dotEl = item.querySelector('.history-dot');
+      if(r.dayType === 'green') dotEl.style.background = '#6B8F5A';
+      else if(r.dayType === 'yellow') dotEl.style.background = '#D4A017';
+      else if(r.dayType === 'red') dotEl.style.background = '#B85C4A';
+      else dotEl.style.background = '#DED4BE';
+      historyList.appendChild(item);
+    });
+  }
+}
+
+function exportBackup(){
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `showup-backup-${todayStr()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importBackup(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try{
+      const parsed = JSON.parse(e.target.result);
+      if(!parsed.days || !parsed.schedules){
+        alert('This file does not look like a valid backup.');
+        return;
+      }
+      if(confirm('This will replace all current data with the backup. Continue?')){
+        state = parsed;
+        if(!state.weeklyReflections) state.weeklyReflections = {};
+        saveState();
+        render();
+      }
+    }catch(err){
+      alert('Could not read that file as a backup.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function exportCSV(){
+  const rows = [['Date','Day Type','Schedule','Wake','Bed','Items Done','Total Items','Calories','Protein','Fat','Carbs','Notes']];
+  Object.keys(state.days).sort().forEach(d => {
+    const r = state.days[d];
+    const schedItems = state.schedules[r.scheduleType] || [];
+    const doneCount = schedItems.filter(i => r.completed[i.id]).length;
+    rows.push([
+      d,
+      r.dayType || '',
+      r.scheduleType || '',
+      r.sleep ? r.sleep.actualWake || '' : '',
+      r.sleep ? r.sleep.actualBed || '' : '',
+      doneCount,
+      schedItems.length,
+      r.nutrition ? r.nutrition.calories || '' : '',
+      r.nutrition ? r.nutrition.protein || '' : '',
+      r.nutrition ? r.nutrition.fat || '' : '',
+      r.nutrition ? r.nutrition.carbs || '' : '',
+      r.notes ? '"' + r.notes.replace(/"/g,'""') + '"' : ''
+    ]);
+  });
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `showup-summary-${todayStr()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+render();
+setInterval(() => { render(); }, 60000);
+</script>
+</body>
+</html>
